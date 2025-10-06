@@ -82,3 +82,23 @@ Features:
 Files:
 - `webapp/app.py` — Flask server
 - `webapp/templates/index.html` — Minimal UI (responsive)
+
+## GitHub Pages (no server)
+
+This repo also includes a static site that runs the converter in your browser via Pyodide.
+
+Live demo (after Pages is enabled):
+- https://SiRex750.github.io/c-to-cpp-convertor/
+
+Enable Pages:
+1. Open your repo Settings → Pages
+2. Under "Build and deployment":
+  - Source: Deploy from a branch
+  - Branch: `main`
+  - Folder: `/docs`
+3. Save and wait ~1–2 minutes for deployment
+
+Static site files:
+- `docs/index.html` — UI
+- `docs/cconv_py/` — Python converter files used by Pyodide
+- `docs/.nojekyll` — ensures GitHub Pages serves files as-is
