@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>C ↔ C++ Converter (GitHub Pages)</title>
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+    <style>
+      textarea { font-family: monospace; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+      .row { margin: 0.5rem 0; }
+      .status { font-size: 0.9rem; color: #555; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>C ↔ C++ Converter</h1>
+      <p>Runs fully in your browser via Pyodide. First load may take a few seconds.</p>
+    </header>
+    <main>
+      <section>
+        <div class="row">
+          <label>
+            Direction
+            <select id="direction">
+              <option value="c2cpp" selected>C → C++</option>
+              <option value="cpp2c">C++ → C</option>
+            </select>
+          </label>
+          <button id="convertBtn">Convert</button>
+          <span id="status" class="status">Loading Python runtime…</span>
+        </div>
+        <div class="grid">
+          <div>
+            <label>Input code</label>
+            <textarea id="input" rows="18" placeholder="Paste your C or C++ code here..."></textarea>
+          </div>
+          <div>
+            <label>Output</label>
+            <textarea id="output" rows="18" placeholder="Converted output will appear here" readonly></textarea>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <small>
+        Heuristic converter. Review and compile the output. Source on GitHub.
+      </small>
+    </footer>
+
+    <script>
+      let pyodide = null;
+      const statusEl = document.getElementById('status');
+      const inputEl = document.getElementById('input');
+      const outputEl = document.getElementById('output');
+      const dirEl = document.getElementById('direction');
+      const btnEl = document.getElementById('convertBtn');
+
+      async function initPyodide() {
+        statusEl.textContent = 'Loading Python runtime…';
+        pyodide = await loadPyodide();
+        statusEl.textContent = 'Loading converter…';
+        // Create module path and write files
+        try { pyodide.FS.mkdir('/home/pyodide/cconv'); } catch(e) {}
+        const files = ['__init__.py', 'converter.py'];
+        for (const f of files) {
+          const resp = await fetch(`cconv_py/${f}`);
+          const text = await resp.text();
+          pyodide.FS.writeFile(`/home/pyodide/cconv/${f}`, text);
+        }
+        // Add to sys.path
+        pyodide.runPython(`import sys\nsys.path.append('/home/pyodide')`);
+        // Test import
+        pyodide.runPython(`from cconv.converter import convert_c_to_cpp, convert_cpp_to_c`);
+        statusEl.textContent = 'Ready.';
+      }
+
+      async function convert() {
+        if (!pyodide) return;
+        const code = inputEl.value || '';
+        const direction = dirEl.value;
+        statusEl.textContent = 'Converting…';
+        try {
+          pyodide.globals.set('input_code', code);
+          pyodide.globals.set('direction', direction);
+          pyodide.runPython(`\nfrom cconv.converter import convert_c_to_cpp, convert_cpp_to_c\n\nif direction == 'c2cpp':\n    out = convert_c_to_cpp(input_code)\nelse:\n    out = convert_cpp_to_c(input_code)\n`);
+          const out = pyodide.globals.get('out');
+          outputEl.value = out.toString();
+          statusEl.textContent = 'Done.';
+        } catch (e) {
+          outputEl.value = String(e);
+          statusEl.textContent = 'Error.';
+        }
+      }
+
+      btnEl.addEventListener('click', convert);
+      initPyodide();
+    </script>
+  </body>
+  </html>
