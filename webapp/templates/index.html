@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>C ↔ C++ Converter</title>
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+    <style>
+      textarea { font-family: monospace; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+      .row { margin: 0.5rem 0; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>C ↔ C++ Converter</h1>
+      <p>Paste code below and choose a direction. Heuristic conversion—review the result.</p>
+    </header>
+    <main>
+      <form method="post">
+        <div class="row">
+          <label>
+            Direction
+            <select name="direction">
+              <option value="c2cpp" {{ 'selected' if direction=='c2cpp' else '' }}>C → C++</option>
+              <option value="cpp2c" {{ 'selected' if direction=='cpp2c' else '' }}>C++ → C</option>
+            </select>
+          </label>
+          <label>
+            Filename
+            <input type="text" name="filename" placeholder="converted" />
+          </label>
+        </div>
+        <div class="grid">
+          <div>
+            <label>Input code</label>
+            <textarea name="code" rows="20" placeholder="Paste your C or C++ code here...">{{ code }}</textarea>
+          </div>
+          <div>
+            <label>Output</label>
+            <textarea rows="20" readonly>{{ out }}</textarea>
+          </div>
+        </div>
+        <div class="row">
+          <button type="submit">Convert</button>
+          <button type="submit" name="download" value="1">Download</button>
+        </div>
+      </form>
+    </main>
+    <footer>
+      <small>Heuristic tool. For complex cases, compile and test the result.</small>
+    </footer>
+  </body>
+  </html>
